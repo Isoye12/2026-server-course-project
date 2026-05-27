@@ -18,6 +18,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User signUp(SignupRequest request) {
+        if (request.getStudentId() == null || request.getStudentId().isBlank()) {
+            throw new IllegalArgumentException("학번을 입력해주세요.");
+        }
+        if (request.getName() == null || request.getName().isBlank()) {
+            throw new IllegalArgumentException("이름을 입력해주세요.");
+        }
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new IllegalArgumentException("비밀번호를 입력해주세요.");
+        }
         if (userRepository.existsByStudentId(request.getStudentId())) {
             throw new IllegalArgumentException("이미 가입된 학번입니다: " + request.getStudentId());
         }

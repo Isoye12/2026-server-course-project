@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.config.jwt.JwtProperties;
 import com.example.demo.config.jwt.TokenProvider;
 import com.example.demo.domain.User;
+import com.example.demo.exception.InvalidTokenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +21,7 @@ public class TokenServiceImpl implements TokenService {
     @Transactional(readOnly = true)
     public String reissueAccessToken(String refreshToken) {
         if (!tokenProvider.validToken(refreshToken)) {
-            throw new IllegalStateException("유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요.");
+            throw new InvalidTokenException("유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요.");
         }
         Long userId = refreshTokenService.findByRefreshToken(refreshToken).getUserId();
         User user = userService.findById(userId);

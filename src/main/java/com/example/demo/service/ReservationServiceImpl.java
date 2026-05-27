@@ -73,7 +73,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public Reservation updateReservation(Long userId, Long reservationId, ReservationUpdateRequest request) {
-        Reservation reservation = reservationRepository.findById(reservationId)
+        Reservation reservation = reservationRepository.findByIdWithDetails(reservationId)
                 .orElseThrow(() -> new ReservationNotFoundException(reservationId));
 
         if (!reservation.getUser().getId().equals(userId)) {
@@ -86,13 +86,11 @@ public class ReservationServiceImpl implements ReservationService {
             throw new IllegalArgumentException("시작 교시는 종료 교시보다 클 수 없습니다.");
         }
 
-        // 중복 예약 체크 (자기 자신 제외)
-        List<Reservation> conflicts = reservationRepository.findConflicts(
+        List<Reservation> conflicts = reservationRepository.findConflictsExcluding(
                 reservation.getStudyRoom().getId(), request.getDate(),
                 request.getStartPeriod(), request.getEndPeriod(),
-                ReservationStatus.RESERVED
+                ReservationStatus.RESERVED, reservationId
         );
-        conflicts.removeIf(r -> r.getId().equals(reservationId));
         if (!conflicts.isEmpty()) {
             throw new IllegalStateException("변경하려는 시간대에 이미 예약이 존재합니다.");
         }
