@@ -1,40 +1,24 @@
-name: Gitnub Action test No 1.
+name: Deploy To EC2
 
-# main branch에 push되면 실행하겠다
 on:
   push:
     branches:
       - main
 
 jobs:
-  My-Deploy-Job:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Hello World 출력
-        run: echo "Hello World"
-
-      - name: 여러개 명령어 추가하기
-        run: |
-          echo "Good"
-          echo "Morning"
-
-      - name: GitHub Action 내장 변수 사용
-        run: |
-          echo $GITHUB_SHA
-          echo $GITHUB_REPOSITORY
-          echo "3. 워크플로우 실행 주체 : $GITHUB_ACTOR"
-          echo "4. 현재 실행중인 branch : $GITHUB_REF_NAME"
-          echo "5. 이 워크플로우 실행 번호 : $GITHUB_RUN_NUMBER"
-          echo "6. 워크플로우 발생 이벤트 : $GITHUB_EVENT_NAME"
-          echo "7. 현재 액션이 돌아가는 OS : $GITHUB_OS"
-          echo "8. 가상환경 기본작업 경로 : $GITHUB_WORKSPACE"
-
-      - name: Secret 변수 사용, 타인 조회 불가
-        run: |
-          echo ${{secrets.MY_AGE}}
-          echo ${{secrets.MY_PAY}}
-
-      - name: Vars 변수 사용, 타인 조회 가능
-        run: |
-          echo ${{vars.MY_GRADE}}
-          echo ${{vars.MY_HEIGHT}}
+      - name: SSH로 EC2에 접속하기
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{secrets.EC2_HOST}}
+          username: ${{secrets.EC2_USERNAME}}
+          key: ${{secrets.EC2_PRIVATE_KEY}}
+          script_stop:  # 만약에 아래 스크립트가 오류 나면 중지
+          script: | 
+            cd /home/ubuntu/2026-server-course-project
+            git pull origin main
+            ./gradlew clean build -x test
+            sudo fuser -k -n tcp 80 || true
+            sudo nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
