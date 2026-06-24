@@ -1,0 +1,24 @@
+name: Deploy To EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH로 EC2에 접속하기
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{secrets.EC2_HOST}}
+          username: ${{secrets.EC2_USERNAME}}
+          key: ${{secrets.EC2_PRIVATE_KEY}}
+          script_stop:  # 만약에 아래 스크립트가 오류 나면 중지
+          script: | 
+            cd /home/ubuntu/2026-server-course-project
+            git pull origin main
+            ./gradlew clean build -x test
+            sudo fuser -k -n tcp 80 || true
+            sudo nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
