@@ -1,8 +1,0 @@
-services:
-  app:
-    build: .
-    image: 3404_leesoye
-    container_name: roomus-app
-    ports:
-      - "8080:8080"
-    restart: unless-stopped
