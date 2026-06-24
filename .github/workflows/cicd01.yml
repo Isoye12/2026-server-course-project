@@ -24,6 +24,6 @@ jobs:
             rm -rf src/main/resources/application.yml
             git pull origin main
             echo "$APPLICATION_PROPERTIES" > src/main/resources/application.yml
-            ./gradlew clean build -x test
+            ./gradlew clean build
             sudo fuser -k -n tcp 80 || true
             sudo nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
